@@ -1,85 +1,96 @@
-let films = [
-  {
-    id: "1",
-    title: "Squid Game",
-    rating: 8.0,
-    description:
-      "Hundreds of cash-strapped players accept a strange invitation to compete in children's games. Inside, a tempting prize awaits with deadly high stakes: a survival game that has a whopping 45.6 billion-won prize at stake.",
-    imdbLink: "https://www.imdb.com/title/tt10919420/",
-  },
-  {
-    id: "2",
-    title: "Chernobyl",
-    rating: 9.3,
-    description:
-      "In April 1986, the city of Chernobyl in the Soviet Union suffers one of the worst nuclear disasters in the history of mankind. Consequently, many heroes put their lives on the line in the following days, weeks and months.",
-    imdbLink:
-      "https://www.imdb.com/title/tt7366338/?ref_=hm_tpks_i_2_pd_tp1_pbr_ic",
-  },
-  {
-    id: "3",
-    title: "House",
-    rating: 8.3,
-    description:
-      "Using a crack team of doctors and his wits, an antisocial maverick doctor specializing in diagnostic medicine does whatever it takes to solve puzzling cases that come his way.",
-    imdbLink: "https://www.imdb.com/title/tt0412142/?ref_=hm_stp_i_12_pvs_piv",
-  },
-];
+import FilmModel from "../modules/film.js";
+import { v4 as uuidv4 } from "uuid";
 
-const ADD_FILM = (req, res) => {
-  const id = req.body.id;
+const ADD_FILM = async (req, res) => {
+  try {
+    const film = new FilmModel({
+      id: uuidv4(),
+      title: req.body.title,
+      rating: req.body.rating,
+      description: req.body.description,
+      imdbLink: req.body.imdbLink,
+    });
 
-  const existingId = films.filter((i) => i.id === id);
+    const response = await film.save();
 
-  if (existingId.length > 0) {
-    return res
-      .status(404)
-      .json({ message: "Film with this ID already exists" });
-  }
-
-  const film = {
-    id: req.body.id,
-    title: req.body.title,
-    rating: req.body.rating,
-    description: req.body.description,
-    imdbLink: req.body.imdbLink,
-  };
-
-  films.push(film);
-
-  console.log(film);
-
-  return res.status(201).json({
-    film: film,
-  });
-};
-
-const GET_SORTED_FILMS = (req, res) => {
-  if (films.length === 0) {
-    return res.status(200).json({
-      message: "Data not exists",
+    return res.status(201).json({
+      film: response,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "App does not working",
     });
   }
-  films.sort((a, b) => (a.rating < b.rating ? 1 : -1));
-  return res.status(200).json({
-    films: films,
-  });
+};
+
+const GET_FILM_BY_ID = async (req, res) => {
+  try {
+    const response = await FilmModel.findOne({ id: req.params.id });
+
+    if (!response) {
+      return res.status(404).json({
+        message: "Film with this ID does not exist",
+      });
+    }
+
+    return res.status(200).json({
+      film: response,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "App does not working",
+    });
+  }
 };
 
 const DELETE_FILMS = (req, res) => {
-  films = [];
-  return res.status(200).json({ message: "Films was removed" });
-};
-
-const GET_FILMS = (req, res) => {
-  if (films.length === 0) {
-    return res.status(200).json({
-      message: "Data not exists",
+  try {
+    return res.status(200).json({ message: "All films was removed" });
+  } catch (err) {
+    return res.status(400).json({
+      message: "App does not working",
     });
   }
-  return res.status(200).json({
-    films: films,
-  });
 };
 
-export { ADD_FILM, GET_SORTED_FILMS, DELETE_FILMS, GET_FILMS };
+const GET_FILMS = async (req, res) => {
+  try {
+    const response = await FilmModel.find();
+    return res.status(200).json({
+      films: response,
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "App does not working",
+    });
+  }
+};
+
+const UPDATE_FILM_BY_ID = async (req, res) => {
+  try {
+    // findOneAndUpdate laužtiniuose skliaustuose nurodoma pagal ką norim grąžinti duomenis
+    const response = await FilmModel.findOneAndUpdate(
+      // pagal ką ieškoma:
+      {
+        id: req.params.id,
+      },
+      // kas update'inama (išspreadinamas body):
+      {
+        ...req.body,
+      },
+      {
+        new: true,
+      }
+    );
+    return res.status(200).json({
+      film: response,
+      message: "Film data was updated",
+    });
+  } catch (err) {
+    return res.status(400).json({
+      message: "App does not working",
+    });
+  }
+};
+
+export { ADD_FILM, GET_FILM_BY_ID, DELETE_FILMS, GET_FILMS, UPDATE_FILM_BY_ID };

@@ -1,19 +1,22 @@
 import express from "express";
 import {
   ADD_FILM,
-  GET_SORTED_FILMS,
+  GET_FILM_BY_ID,
   DELETE_FILMS,
   GET_FILMS,
+  UPDATE_FILM_BY_ID,
 } from "../controllers/film.js";
 
 const router = express.Router();
 
-router.post("/addFilm", ADD_FILM);
+router.post("/films", ADD_FILM);
 
-router.get("/getSortedFilms", GET_SORTED_FILMS);
+router.get("/films/:id", GET_FILM_BY_ID);
 
-router.delete("/deleteFilms", DELETE_FILMS);
+router.delete("/films/:id", DELETE_FILMS);
 
-router.get("/getFilms", GET_FILMS);
+router.get("/films", GET_FILMS);
+
+router.put("/films/:id", UPDATE_FILM_BY_ID);
 
 export default router;
